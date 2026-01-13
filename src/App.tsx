@@ -1,35 +1,70 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+// App.tsx
+import { useState } from "react";
+import "./App.css";
+
+import EmployeeCard from "./components/EmployeeCard";
+
+// Types correspondant à la réponse de randomuser.me
+type Employee = {
+  name: {
+    first: string;
+    last: string;
+  };
+  email: string;
+  picture: {
+    medium: string;
+  };
+};
+
+// Valeur de départ (peut rester vide si vous préférez)
+const sampleEmployee: Employee = {
+  name: { first: "Charlie", last: "Thompson" },
+  email: "charlie.thompson@example.com",
+  picture: {
+    medium: "https://randomuser.me/api/portraits/med/men/40.jpg",
+  },
+};
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [employee, setEmployee] = useState<Employee>(sampleEmployee);
+
+  // Fonction appelée au clic du bouton
+  const getEmployee = async () => {
+    try {
+      const response = await fetch("https://randomuser.me/api?nat=en");
+      const data = await response.json();
+
+      // randomuser.me renvoie un tableau `results`
+      const newEmp = data.results[0];
+      // On ne garde que les champs dont on a besoin
+      const formatted: Employee = {
+        name: {
+          first: newEmp.name.first,
+          last: newEmp.name.last,
+        },
+        email: newEmp.email,
+        picture: {
+          medium: newEmp.picture.medium,
+        },
+      };
+
+      setEmployee(formatted);
+    } catch (err) {
+      console.error("Erreur lors de la récupération de l'employé :", err);
+    }
+  };
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    <div className="App">
+      {/* Bouton pour déclencher la récupération */}
+      <button type="button" onClick={getEmployee}>
+        Get Employee
+      </button>
+
+      {/* Affichage de la carte */}
+      <EmployeeCard employee={employee} />
+    </div>
+  );
 }
 
-export default App
+export default App;
